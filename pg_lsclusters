@@ -22,11 +22,31 @@ use Getopt::Long;
 my $no_header;
 my $json;
 my $start_conf;
+my $show_binaries;
+
 exit 1 unless GetOptions (
     'h|no-header' => \$no_header,
     'j|json' => \$json,
     's|start-conf' => \$start_conf,
+    'b|binaries' => \$show_binaries,
 );
+
+if ($show_binaries){
+    my @versions = get_versions();
+    if ( $json ){
+        eval { require JSON; };
+        error 'Please install JSON.pm for JSON output (Debian: libjson-perl)'
+            if ($@);
+        print JSON::encode_json( {"Installed Binaries" => \@versions }  ) . "\n";
+        }
+    else{
+        #print "Installed Binaries\n" unless $no_header;
+	# Optional code to show a Header.
+	# Seems Obvious for a single Column.
+        print join("\n", get_versions()  )."\n";
+        }
+    exit 0;
+    }
 
 my (@versions, $ls_cluster);
 if (@ARGV == 1 and $ARGV[0] =~ m{^(\d+(?:\.\d+)?)[-/]([-.\w]+)$}) {
@@ -143,6 +163,11 @@ Output information in JSON format. Needs JSON.pm installed.
 =item B<-s>, B<--start-conf>
 
 Include F<start.conf> information in status column.
+
+=item B<-b>, B<--binaries>
+
+List installed PostgreSQL-binaries.
+
 
 =back
 
